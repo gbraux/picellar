@@ -1,7 +1,7 @@
 import os
 import glob
 import time
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import Adafruit_DHT
 
 #os.system('modprobe w1-gpio')
@@ -90,68 +90,70 @@ def Read_temp_sensors():
 	 # return round(temp_c,1)
 try:
 	if __name__ == "__main__":
-		#GPIO.setwarnings(False)
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(20, GPIO.OUT)
-		GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		#GPIO.cleanup();
-		#GPIO.setmode(GPIO.BCM)
-		#GPIO.setup(20, GPIO.OUT)
+		f = 1
+		# # GPIO.setwarnings(False)
+		# GPIO.setmode(GPIO.BCM)
+		# GPIO.setup(20, GPIO.OUT)
+		# GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		# # GPIO.cleanup();
+		# # GPIO.setmode(GPIO.BCM)
+		# # GPIO.setup(20, GPIO.OUT)
 		
-		start = False;
-		GPIO.setup(20, start)
-		tickCount = 0
-		startTime = time.time()
+		# start = False;
+		# GPIO.setup(20, start)
+		# tickCount = 0
+		# startTime = time.time()
 		
-		p = GPIO.PWM(20, 50)  # channel=12 frequency=50Hz
-		p.start(100)
+		# p = GPIO.PWM(20, 50)  # channel=12 frequency=50Hz
+		# p.start(100)
 		
-		while True:
-			a = 1
-			# for dc in range(0, 101, 5):
-				# p.ChangeDutyCycle(dc)
-				# time.sleep(0.1)
-			# for dc in range(100, -1, -5):
-				# p.ChangeDutyCycle(dc)
-				# time.sleep(0.1)
-			#print GPIO.input(26)
-			#GPIO.output(20,True)
-			#print "True"
-			#time.sleep(0.3)
-			#GPIO.output(20,False)
-			#print "False"
-			#time.sleep(0.3)
+		# while True:
+			# a = 1
+			# # for dc in range(0, 101, 5):
+				# # p.ChangeDutyCycle(dc)
+				# # time.sleep(0.1)
+			# # for dc in range(100, -1, -5):
+				# # p.ChangeDutyCycle(dc)
+				# # time.sleep(0.1)
+			# # print GPIO.input(26)
+			# # GPIO.output(20,True)
+			# # print "True"
+			# # time.sleep(0.3)
+			# # GPIO.output(20,False)
+			# # print "False"
+			# # time.sleep(0.3)
 			
 		
-		while True:
-			#for sensor  in read_temp_sensor():
-			#	print "Sensor ID : " + sensor.name
-			#	print "Sensor Data (temp) : " + str(sensor.temperature)
-			#	print
-			#start = not start
-			#print start
-			#if start:
-			#	GPIO.setup(20, start)
-			#else:
-			#	GPIO.setup(20, start)
+		# while True:
+			# # for sensor  in read_temp_sensor():
+				# # print "Sensor ID : " + sensor.name
+				# # print "Sensor Data (temp) : " + str(sensor.temperature)
+				# # print
+			# # start = not start
+			# # print start
+			# # if start:
+				# # GPIO.setup(20, start)
+			# # else:
+				# # GPIO.setup(20, start)
 			
 
-			if GPIO.input(26) == False:
-				tickCount = tickCount + 1
+			# if GPIO.input(26) == False:
+				# tickCount = tickCount + 1
 			
-			delay = time.time() - startTime
-			#print time.time()
-			if delay > 1:
-				rpm = tickCount
-				print str(rpm) + "RPM"
-				print "Delay : " + str(delay)
-				tickCount = 0
-				startTime = time.time()
-			#time.sleep(1)
+			# delay = time.time() - startTime
+			# # print time.time()
+			# if delay > 1:
+				# rpm = tickCount
+				# print str(rpm) + "RPM"
+				# print "Delay : " + str(delay)
+				# tickCount = 0
+				# startTime = time.time()
+			# # time.sleep(1)
 				
 
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
-    GPIO.cleanup() # cleanup all GPIO
+    a = 1
+	#GPIO.cleanup() # cleanup all GPIO
 				
 # base_dir = '/sys/bus/w1/devices/'
 # device_folder = glob.glob(base_dir + '28*')[0]

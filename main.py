@@ -24,6 +24,7 @@ import Adafruit_DHT
 import threading
 import time 
 import sys
+import RPi.GPIO as GPIO
 
 
 
@@ -45,26 +46,31 @@ class Picellar(FloatLayout):
 
 	def _workerThread(self):
 		i = 0
+		
+		p = GPIO.PWM(20, 50)  # channel=12 frequency=50Hz
+		p.start(0)
+		
 		while appStart:
 			
-			# self.deg.text = "JFDKLJLKFD"
-			
+
+			# Changement Couleur  deg/hum
 			if self.globalSd is not None:
 			
 				if self.tempTarget - 2 > self.globalSd[4].temperature:
 					self.deg.color = [0, 0, 1, 1]
+					p.ChangeDutyCycle(100)
 					print "too low"
 				elif self.tempTarget + 2 < self.globalSd[4].temperature:
 					self.deg.color = [1, 0, 0, 1]
+					p.ChangeDutyCycle(100)
 					print "too high"
 				else:
 					self.deg.color = [1, 1, 1, 1]
+					p.ChangeDutyCycle(0)
 					print "temp ok"
 					
-				print "OK"
-				print "TempTarget " + str(self.tempTarget)
-
-			#print "OK"
+				print "Worker : TempTarget " + str(self.tempTarget)
+			
 			time.sleep(0.5)
 	
 	
@@ -109,6 +115,9 @@ class Picellar(FloatLayout):
 		self.update_temp(sd)
 		
 	def Init(self):
+		
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(20, GPIO.OUT)
 		self.SetNewTargets(self.tempTarget,self.humTarget)
 		t = threading.Thread(target=self._workerThread)
 		t.start()
@@ -157,3 +166,4 @@ except:
 #except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
 	print "Unexpected error:", sys.exc_info()[0]
 	appStart = False
+	GPIO.cleanup()
