@@ -1,0 +1,120 @@
+#:kivy 1.0
+#:import kivy kivy
+
+<Picellar>:
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            #source: 'data/images/background.jpg'
+			source: 'vin.jpg'
+            size: self.size
+			
+	txt: txt1
+	deg: deg1
+	hum: hum1
+	humTargetW: humTarget
+	tempTargetW: tempTarget
+    
+	
+	# BoxLayout:
+		# orientation: 'vertical'
+		
+		# Label:
+			# id: deg1
+			# text_size: self.width, None
+			# size_hint: (1,.1)
+			# font_size: 40
+			# color: (1, 1, 1, .8)
+			# text: "--- La cave de condé ! ---"
+			# valign: 'middle'
+			# halign: 'center'
+			# markup: True
+
+
+	BoxLayout:
+		orientation: 'horizontal'
+	
+		BoxLayout:
+			id: bbox
+			orientation: 'vertical'
+			
+			Label:
+				id: txt1
+				text_size: self.width, None
+				font_size: 20
+				color: (1, 1, 1, .8)
+				text: "Initialisation ..."
+				valign: 'middle'
+				#halign: 'center'
+				markup: True
+		
+		BoxLayout:
+			orientation: 'vertical'		
+			
+			BoxLayout:
+				orientation: 'vertical'	
+			
+				BoxLayout:
+					orientation: 'horizontal'	
+					Button:
+						text: "-1"
+						font_size: 30
+						on_press: root.ChangeTargets(1)
+					Label:
+						id: tempTarget
+						text_size: self.width, None
+						font_size: 30
+						color: (1, 1, 1, .8)
+						text: "init"
+						valign: 'middle'
+						halign: 'center'
+						#markup: True
+					Button:
+						text: "+1"
+						font_size: 30
+						on_press: root.ChangeTargets(2)
+
+				Label:
+					id: deg1
+					text_size: self.width, None
+					font_size: 90
+					color: (1, 0, 0, .8)
+					text: "deg"
+					valign: 'middle'
+					halign: 'center'
+					markup: True
+
+			
+			BoxLayout:
+				orientation: 'vertical'	
+
+				Label:
+					id: hum1
+					text_size: self.width, None
+					font_size: 90
+					color: (1, 0, 0, .8)
+					text: "hum"
+					valign: 'middle'
+					halign: 'center'
+					markup: True
+				
+				BoxLayout:
+					orientation: 'horizontal'	
+					Button:
+						text: "-1"
+						font_size: 30
+						on_press: root.ChangeTargets(3)
+					Label:
+						id:humTarget
+						text_size: self.width, None
+						font_size: 30
+						color: (1, 1, 1, .8)
+						text: "init"
+						valign: 'middle'
+						halign: 'center'
+						#markup: True
+					Button:
+						text: "+1"
+						font_size: 30
+						on_press: root.ChangeTargets(4)
