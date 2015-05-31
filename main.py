@@ -58,11 +58,11 @@ class Picellar(FloatLayout):
 			
 				if self.tempTarget - 2 > self.globalSd[4].temperature:
 					self.deg.color = [0, 0, 1, 1]
-					p.ChangeDutyCycle(100)
+					p.ChangeDutyCycle(0)
 					print "too low"
 				elif self.tempTarget + 2 < self.globalSd[4].temperature:
 					self.deg.color = [1, 0, 0, 1]
-					p.ChangeDutyCycle(100)
+					p.ChangeDutyCycle(0)
 					print "too high"
 				else:
 					self.deg.color = [1, 1, 1, 1]
@@ -100,7 +100,8 @@ class Picellar(FloatLayout):
 			if (sensorData.name == "DHT22-1"):
 				self.deg.text = "[i][b]" + str(sensorData.temperature) + " °C[/b][/i]"
 				self.hum.text = "[i][b]" + str(sensorData.humidity) + " %[/b][/i]"
-				
+				print "Main temp : " + str(sensorData.temperature) + " C"
+				print "Main Hum  : " + str(sensorData.humidity) + " %"
 			
 		self.txt.text = myText
 		print "Updated !"
