@@ -91,9 +91,12 @@ def Read_temp_sensors():
 try:
 	if __name__ == "__main__":
 		f = 1
-		# # GPIO.setwarnings(False)
+		# GPIO.setwarnings(False)
 		# GPIO.setmode(GPIO.BCM)
+		# GPIO.setup(13, GPIO.OUT)
+		# GPIO.setup(16, GPIO.OUT)
 		# GPIO.setup(20, GPIO.OUT)
+		# GPIO.setup(26, GPIO.OUT)
 		# GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		# # GPIO.cleanup();
 		# # GPIO.setmode(GPIO.BCM)
@@ -124,11 +127,16 @@ try:
 			# # time.sleep(0.3)
 			
 		
-		# while True:
-			# # for sensor  in read_temp_sensor():
-				# # print "Sensor ID : " + sensor.name
-				# # print "Sensor Data (temp) : " + str(sensor.temperature)
-				# # print
+		while True:
+			print "Start Sensor Read"
+			for sensor  in Read_temp_sensors():
+				print "Sensor ID : " + sensor.name
+				print "Sensor Data (temperature) : " + str(sensor.temperature)
+				print "Sensor Data (humidity) : " + str(sensor.humidity)
+				print
+			
+			time.sleep(1)
+			
 			# # start = not start
 			# # print start
 			# # if start:
@@ -153,7 +161,7 @@ try:
 
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
     a = 1
-	#GPIO.cleanup() # cleanup all GPIO
+	# GPIO.cleanup() # cleanup all GPIO
 				
 # base_dir = '/sys/bus/w1/devices/'
 # device_folder = glob.glob(base_dir + '28*')[0]

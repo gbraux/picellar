@@ -24,6 +24,11 @@ import Adafruit_DHT
 import threading
 import time 
 import sys
+import datetime
+import pytz
+import socket
+import fcntl
+import struct
 import RPi.GPIO as GPIO
 
 
@@ -37,21 +42,35 @@ class Picellar(FloatLayout):
 	txt = ObjectProperty(None)
 	deg = ObjectProperty(None)
 	hum = ObjectProperty(None)
+	
+	ui_time = ObjectProperty(None)
+	ui_ipadd = ObjectProperty(None)
+	
 	tempTargetW = ObjectProperty(None)
 	humTargetW = ObjectProperty(None)
 	humTarget = 60
 	tempTarget = 12
 	globalSd = None
 	
+	def get_ip_address(self,ifname):
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		return socket.inet_ntoa(fcntl.ioctl(s.fileno(),0x8915, struct.pack('256s', ifname[:15]))[20:24])
 
 	def _workerThread(self):
 		i = 0
 		
-		p = GPIO.PWM(20, 50)  # channel=12 frequency=50Hz
-		p.start(0)
+		# p = GPIO.PWM(20, 50)  # channel=12 frequency=50Hz
+		# p.start(0)
 		
 		while appStart:
 			
+			# Affichage de l'heure			
+			self.ui_time.text = str(pytz.utc.localize(datetime.datetime.now()).astimezone(pytz.timezone('Europe/Paris')).strftime('%H:%M:%S'))
+			
+			# Affichange de l'IP
+			# self.ui_ipadd.text = self.get_ip_address('eth0')
+			
+			#print "Worker : TempTarget " + str(self.tempTarget)
 
 			# Changement Couleur  deg/hum
 			if self.globalSd is not None:
@@ -69,7 +88,8 @@ class Picellar(FloatLayout):
 					p.ChangeDutyCycle(0)
 					print "temp ok"
 					
-				print "Worker : TempTarget " + str(self.tempTarget)
+				#print "Worker : TempTarget " + str(self.tempTarget)
+				#print "Current time : " + str(datetime.datetime.now().time())
 			
 			time.sleep(0.5)
 	
@@ -145,7 +165,6 @@ class Picellar(FloatLayout):
 		self.humTarget = hum
 		self.tempTargetW.text = str(temp) + " °C"
 		self.humTargetW.text = str(hum) + " %"
-		
 		
 class PicellarApp(App):
     title = 'Picellar'
