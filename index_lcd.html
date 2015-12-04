@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+    <head>
+
+            <title>Projet GreenFeed - Station de recharge a energie positive</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+			
+
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<!--
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		-->
+		
+		  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+			<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+			<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		
+		<style media="screen" type="text/css">
+		
+
+
+		#header{
+		text-align: center;
+		}
+		
+		#buttons{
+		text-align: center;
+		}
+			
+		
+		#jauge_hum_div{
+		height:115px;
+		}
+
+		#jauge_temp_div{
+		width:350px;
+		}
+		
+		
+		.ui-state-active{
+			background: #00ff00;
+		}
+		
+		body {
+			background-image: url("background_gray.jpg");
+			background-color: #cccccc;
+			overflow:hidden;
+		} 
+		</style>
+
+		
+        <script type="text/javascript">
+
+		// Load the Visualization API and the piechart package.
+		google.load('visualization', '1.1', {
+			'packages' : ['corechart','gauge']
+		});
+
+		// Set a callback to run when the Google Visualization API is loaded.
+		//google.setOnLoadCallback(drawChart);
+
+		var autoUpdate = false;
+		var endDate = new Date();
+		var startDate = new Date(endDate);
+		startDate.setDate(endDate.getDate() - 1);
+		
+		// function setControls(isAuto, heatingOn, coolingOn, fanOn) {
+			
+			
+		// }
+		
+		function updateControlButtons() {
+			var jsonMode = $.ajax({
+					url : "/picellar/api/v1/getmode/",
+					dataType : "json",
+					async : false
+				}).responseText;
+				
+			
+			
+			
+			ModeData = JSON.parse(jsonMode);
+			
+			
+			//POST TEST -------------
+			
+			isAuto = ModeData["isauto"]["value"];
+			heatingOn = ModeData["heatingOn"]["value"];
+			coolingOn = ModeData["coolingOn"]["value"];
+			fanOn = ModeData["fanOn"]["value"];
+					
+			console.log("Auto "+isAuto);
+			
+			$("#fanButton").prop("checked",fanOn).button("refresh");
+			$("#gfButton").prop("checked",coolingOn).button("refresh");
+			$("#heaterButton").prop("checked",heatingOn).button("refresh");
+			
+			if (isAuto) {
+				$("#controlButtonSet").buttonset( "disable" );
+				$("#autoButton").prop("checked",isAuto).button("refresh");
+			}
+			else {
+				$("#controlButtonSet").buttonset( "enable" );
+				$("#autoButton").prop("checked",isAuto).button("refresh");
+			}
+
+		}
+
+		function setControl()
+		{
+			//console.log("buttonState : "+$("#autoButton").prop('checked'));
+			
+			jsconData = "{\"isauto\":"+$("#autoButton").prop('checked')+",\"heatingOn\":"+$("#heaterButton").prop('checked')+", \"coolingOn\":"+$("#gfButton").prop('checked')+", \"fanOn\":"+$("#fanButton").prop('checked')+"}";
+			
+			//$("#autoButton").checked
+			
+			//JSON.stringify(ModeData)
+			
+			$.ajax("/picellar/api/v1/setmode/", {
+			data : jsconData,
+			dataType : "json",
+			contentType : 'application/json',
+			type : 'POST'})
+			
+		}
+		
+		function drawJauges() {
+		
+			var jsonGaugeGraph = $.ajax({
+					url : "/picellar/api/v1/getdata/last",
+					dataType : "json",
+					async : false
+				}).responseText;
+				
+			GaugeData = JSON.parse(jsonGaugeGraph);
+			//console.log(JSON.stringify(GaugeData, null, "  "));
+			//console.log(GaugeData["heatingOn"]["value"]);
+			
+			tempGaugeTable = [
+		   [GaugeData["t2"]["label"], GaugeData["t3"]["label"], GaugeData["t1"]["label"]],
+		   [GaugeData["t2"]["value"], GaugeData["t3"]["value"], GaugeData["t1"]["value"]]
+		   
+		   ];
+		   
+		   	humGaugeTable = [
+		   [GaugeData["hum1"]["label"]],
+		   [GaugeData["hum1"]["value"]]
+		   ];
+
+			var tempGaugeGCdata = new google.visualization.arrayToDataTable(tempGaugeTable);
+			var humGaugeGCdata = new google.visualization.arrayToDataTable(humGaugeTable);
+			
+			var optionsTempGauge = {
+				redFrom: 0,
+				redTo: 9,
+				yellowFrom: 15,
+				yellowTo: 24,
+				yellowColor : '#DC3912',
+				greenFrom: 9,
+				greenTo: 15,
+				min: 0,
+				max : 24,
+				minorTicks: 2
+			};
+			
+			var optionsHumGauge = {
+				yellowFrom: 0,
+				yellowTo: 60,
+				minorTicks: 5
+
+			};
+			
+			var chart = new google.visualization.Gauge(document.getElementById('jauge_temp_div'));
+			chart.draw(tempGaugeGCdata, optionsTempGauge);
+			var chart = new google.visualization.Gauge(document.getElementById('jauge_hum_div'));
+			chart.draw(humGaugeGCdata, optionsHumGauge);
+			
+			//dd = new Date(GaugeData["date"]["value"]);
+			//$('#lastUpdateTime').text('Dernières données des capteurs : '+ dd.getMinutes());
+			$('#lastUpdateTime').text('Dernières données des capteurs : '+ GaugeData["date"]["value"]);
+		}
+		
+		function GetClock(){
+			var d=new Date();
+			var nhour=d.getHours(),nmin=d.getMinutes(),nsec=d.getSeconds();
+			if(nmin<=9) nmin="0"+nmin
+			if(nsec<=9) nsec="0"+nsec;
+
+			document.getElementById('clockbox').innerHTML=""+nhour+":"+nmin+":"+nsec+"";
+		}
+  </script>
+
+
+        <script type="text/javascript">
+
+		//$(document).ready(function () {
+		$(window).load(function () {
+			// First load the chart once
+			console.log("loaded");
+			drawJauges();
+			updateControlButtons();
+			GetClock();
+			
+			// Set interval to call the drawChart again
+			setInterval(drawJauges, 10000);
+			setInterval(updateControlButtons, 10000);
+			setInterval(GetClock,1000);
+		});
+
+
+		
+		$(function () {
+
+
+
+			
+			    $( "#autoButton" ).button();
+				
+				$( "#controlButtonSet" ).buttonset();
+				
+				
+				
+				$("#autoButton").change(function () {
+				
+				setControl()
+					
+				if (this.checked) {
+					$( "#controlButtonSet" ).buttonset( "disable" );
+				} else {
+					$( "#controlButtonSet" ).buttonset( "enable" );
+				}
+			});
+			
+			
+			$("#controlButtonSet").change(function () {
+				setControl()
+			});
+			
+
+
+			
+		});
+		
+        </script>
+
+    </head>
+    <body>
+	
+<div id="header">		
+		<table align="center" valign="middle">
+			<tr>
+				<td>
+					<div id="clockbox"></div>
+				</td>
+				<td>
+					<b style="font-size:15pt;">&nbsp;&nbsp;&nbsp;&nbsp; LA CAVE DE CONDÉ </b>
+				</td>
+				<td>
+					192.168.11.63
+				</td>
+			</tr>
+		</table>
+		
+		<i><div style="font-size:10pt;" id="lastUpdateTime"></div></i>
+</div>		
+
+		
+		<div id="jauges">
+		<table align="center" >
+		<tr>
+			<td>
+				<div id="jauge_temp_div"> </div>
+			</td>
+			<td>
+			<div id="jauge_hum_div"> </div>
+			</td>
+		</tr>
+		</table>
+		</div>
+
+		<div id="buttons">
+		<input type="checkbox" id="autoButton"><label for="autoButton">Régulation<br>Automatique</label>
+
+		<br>
+		<br>
+		<div id="controlButtonSet">
+		  <input type="checkbox" id="gfButton"><label for="gfButton">Compresseur</label>
+		  <input type="checkbox" id="heaterButton"><label for="heaterButton">Chauffage</label>
+		  <input type="checkbox" id="fanButton"><label for="fanButton">Ventilation</label>
+		</div>
+		</div>
+
+ 
+
+    </body>
+</html>

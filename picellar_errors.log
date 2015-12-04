@@ -1,0 +1,2 @@
+/home/pi/picellar/picellar_controller.py:243: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
+  GPIO.cleanup()

@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+    <head>
+
+            <title>Projet GreenFeed - Station de recharge a energie positive</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+			
+
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<!--
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		-->
+		
+		  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+			<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+			<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		
+		<style media="screen" type="text/css">
+		
+
+		
+		  #jauge_temp_div {
+		  float: left;
+			
+			overflow: hidden;
+			width: 450px;    
+		  }
+		  #jauge_hum_div {
+			
+			overflow: hidden;
+			width: 150px;
+		  }
+		  .center{margin:auto; width: 600px}
+		
+		#chart_div{
+			margin-left: auto;
+			margin-right: auto;
+			//width: 1500px;
+			width: 100%;
+			height:400px;
+		}
+
+		
+		.ui-state-active{
+			background: #00ff00;
+		}
+		
+		
+		body {
+			background-image: url("background_gray_HD.jpg");
+		} 
+		</style>
+
+		
+        <script type="text/javascript">
+
+		// Load the Visualization API and the piechart package.
+		google.load('visualization', '1.1', {
+			'packages' : ['corechart','gauge']
+		});
+
+		// Set a callback to run when the Google Visualization API is loaded.
+		//google.setOnLoadCallback(drawChart);
+
+		var autoUpdate = false;
+		var endDate = new Date();
+		var startDate = new Date(endDate);
+		startDate.setDate(endDate.getDate() - 1);
+		
+		// function setControls(isAuto, heatingOn, coolingOn, fanOn) {
+			
+			
+		// }
+		
+		function updateControlButtons() {
+			var jsonMode = $.ajax({
+					url : "/picellar/api/v1/getmode/",
+					dataType : "json",
+					async : false
+				}).responseText;
+				
+			
+			
+			
+			ModeData = JSON.parse(jsonMode);
+			
+			
+			//POST TEST -------------
+			
+			isAuto = ModeData["isauto"]["value"];
+			heatingOn = ModeData["heatingOn"]["value"];
+			coolingOn = ModeData["coolingOn"]["value"];
+			fanOn = ModeData["fanOn"]["value"];
+					
+			console.log("Auto "+isAuto);
+			
+			$("#fanButton").prop("checked",fanOn).button("refresh");
+			$("#gfButton").prop("checked",coolingOn).button("refresh");
+			$("#heaterButton").prop("checked",heatingOn).button("refresh");
+			
+			if (isAuto) {
+				$("#controlButtonSet").buttonset( "disable" );
+				$("#autoButton").prop("checked",isAuto).button("refresh");
+			}
+			else {
+				$("#controlButtonSet").buttonset( "enable" );
+				$("#autoButton").prop("checked",isAuto).button("refresh");
+			}
+
+		}
+
+		function setControl()
+		{
+			//console.log("buttonState : "+$("#autoButton").prop('checked'));
+			
+			jsconData = "{\"isauto\":"+$("#autoButton").prop('checked')+",\"heatingOn\":"+$("#heaterButton").prop('checked')+", \"coolingOn\":"+$("#gfButton").prop('checked')+", \"fanOn\":"+$("#fanButton").prop('checked')+"}";
+			
+			//$("#autoButton").checked
+			
+			//JSON.stringify(ModeData)
+			
+			$.ajax("/picellar/api/v1/setmode/", {
+			data : jsconData,
+			dataType : "json",
+			contentType : 'application/json',
+			type : 'POST'})
+			
+		}
+		
+		function drawJauges() {
+		
+			var jsonGaugeGraph = $.ajax({
+					url : "/picellar/api/v1/getdata/last",
+					dataType : "json",
+					async : false
+				}).responseText;
+				
+			GaugeData = JSON.parse(jsonGaugeGraph);
+			//console.log(JSON.stringify(GaugeData, null, "  "));
+			//console.log(GaugeData["heatingOn"]["value"]);
+			
+			tempGaugeTable = [
+		   [GaugeData["t2"]["label"], GaugeData["t3"]["label"], GaugeData["t1"]["label"]],
+		   [GaugeData["t2"]["value"], GaugeData["t3"]["value"], GaugeData["t1"]["value"]]
+		   
+		   ];
+		   
+		   	humGaugeTable = [
+		   [GaugeData["hum1"]["label"]],
+		   [GaugeData["hum1"]["value"]]
+		   ];
+
+			var tempGaugeGCdata = new google.visualization.arrayToDataTable(tempGaugeTable);
+			var humGaugeGCdata = new google.visualization.arrayToDataTable(humGaugeTable);
+			
+			var optionsTempGauge = {
+				redFrom: 0,
+				redTo: 9,
+				yellowFrom: 15,
+				yellowTo: 24,
+				yellowColor : '#DC3912',
+				greenFrom: 9,
+				greenTo: 15,
+				min: 0,
+				max : 24,
+				minorTicks: 2
+			};
+			
+			var optionsHumGauge = {
+				yellowFrom: 0,
+				yellowTo: 60,
+				minorTicks: 5
+
+			};
+			
+			var chart = new google.visualization.Gauge(document.getElementById('jauge_temp_div'));
+			chart.draw(tempGaugeGCdata, optionsTempGauge);
+			var chart = new google.visualization.Gauge(document.getElementById('jauge_hum_div'));
+			chart.draw(humGaugeGCdata, optionsHumGauge);
+			
+			$('#lastUpdateTime').text('Dernieres données des capteurs : '+ GaugeData["date"]["value"]);
+		}
+		
+		function drawChart() {
+
+		
+			if (autoUpdate) {
+				endDate = new Date();
+				startDate = new Date(endDate);
+				startDate.setDate(endDate.getDate() - 1);
+			}
+				
+		
+			var jsonDataGraph = $.ajax({
+					url : "/picellar/api/v1/getdata/gchart/range?startDate=" +  Math.round(startDate.getTime() / 1000) + "&endDate=" +  Math.round(endDate.getTime() / 1000),
+					dataType : "json",
+					async : false
+				}).responseText;
+
+			var dataGraph = new google.visualization.arrayToDataTable(JSON.parse(jsonDataGraph));
+			
+			
+
+			var options = {
+				title : 'PiCellar - By Guillaume BRAUX',
+				//width : 1500,
+				//height : 400,
+				backgroundColor: { fill:'transparent' },
+				series : {
+					0 : {
+						targetAxisIndex : 1
+					},
+					1 : {
+						targetAxisIndex : 1
+					},
+					2 : {
+						targetAxisIndex : 1
+					},
+					3 : {
+						targetAxisIndex : 0
+					},
+					4 : {
+						targetAxisIndex : 1,
+						type : 'area'
+					},
+					5 : {
+						targetAxisIndex : 1,
+						type : 'area'
+					},
+					6 : {
+						targetAxisIndex : 1,
+						type : 'area'
+					}
+				},
+				vAxes : {
+					// Adds titles to each axis.
+					1 : {
+						title : 'Température (Celsius)'
+					},
+					0 : {
+						title : 'Humidité (%)',
+						viewWindow:{
+							max:80,
+							min:0
+						},
+					}
+				},
+				hAxis : {
+					format : 'MMM d, y HH:mm'
+				}
+			};
+			
+			var optionsGauge = {
+				title : 'PiCellar Jauge',
+				redFrom: 90,
+				redTo: 100
+			};
+
+			var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			chart.draw(dataGraph, options);
+		}
+        </script>
+
+
+        <script type="text/javascript">
+
+		//$(document).ready(function () {
+		$(window).load(function () {
+			// First load the chart once
+			console.log("loaded");
+			drawChart();
+			drawJauges();
+			updateControlButtons();
+			
+			// Set interval to call the drawChart again
+			setInterval(drawJauges, 10000);
+			setInterval(updateControlButtons, 10000);
+		});
+
+		function SetAutoUpdate(enable) {
+			
+			if (enable) {
+				autoUpdate = true;
+				drawChart();
+				window.refreshIntervalId = setInterval(drawChart, 60000);
+				console.log("Refresh active. ID = " + window.refreshIntervalId);
+			}
+			else {
+				autoUpdate = false;
+				clearInterval(window.refreshIntervalId );
+				console.log("Refresh Desactive. ID = " + window.refreshIntervalId);
+			}
+		}
+		
+		$(function () {
+			$("#from").datepicker({
+				defaultDate : "+1w",
+				changeMonth : true,
+				onClose : function (selectedDate) {
+					$("#to").datepicker("option", "minDate", selectedDate);
+				},
+
+				onSelect : function (dateText, inst) {
+
+					var date = $(this).datepicker('getDate');
+					//alert(date);
+					startDate = date;
+					drawChart();
+				}
+
+			});
+
+			$("#to").datepicker({
+				defaultDate : "+1w",
+				changeMonth : true,
+				onClose : function (selectedDate) {
+					$("#from").datepicker("option", "maxDate", selectedDate);
+				},
+
+				onSelect : function (dateText, inst) {
+
+					var date = $(this).datepicker('getDate');
+					endDate = date;
+					drawChart();
+				}
+
+			});
+
+			$("#from").datepicker('setDate', startDate);
+			$("#to").datepicker('setDate', endDate);
+
+			$("#autoUpdateBox").change(function () {
+				if (this.checked) {
+					//alert("Auto Update est maintenant activé");
+					$("#from").datepicker('disable');
+					$("#to").datepicker('disable');
+					//autoUpdate = true;
+					//drawChart();
+					SetAutoUpdate(true);
+				} else {
+					$("#from").datepicker('enable');
+					$("#to").datepicker('enable');
+					//autoUpdate = false;
+					//drawChart();
+					SetAutoUpdate(false);
+				}
+			});
+			
+			    $( "#autoButton" ).button();
+				
+				$( "#controlButtonSet" ).buttonset();
+				
+				
+				
+				$("#autoButton").change(function () {
+				
+				setControl()
+					
+				if (this.checked) {
+					$( "#controlButtonSet" ).buttonset( "disable" );
+				} else {
+					$( "#controlButtonSet" ).buttonset( "enable" );
+				}
+			});
+			
+			
+			$("#controlButtonSet").change(function () {
+				setControl()
+			});
+			
+			
+			$(window).resize(function() {
+				if(this.resizeTO) clearTimeout(this.resizeTO);
+				this.resizeTO = setTimeout(function() {
+					$(this).trigger('resizeEnd');
+				}, 500);
+			});
+
+			//redraw graph when window resize is completed  
+			$(window).on('resizeEnd', function() {
+				drawChart();
+			});
+			
+		});
+		
+        </script>
+
+    </head>
+    <body>
+	
+	<div align="center"
+		<label for="from">From</label>
+		<input type="text" id="from" name="from">
+		<label for="to">to</label>
+		<input type="text" id="to" name="to">
+		<br>
+		<INPUT type="checkbox" id="autoUpdateBox" name="autoUpdateBox" value="0"> Auto Update (1 day)
+        
+		<br>
+		<br>
+		
+		<div class="center">
+			<div id="jauge_temp_div"> </div>
+			<div id="jauge_hum_div"> </div>
+			<br>
+			<div id="lastUpdateTime"></div>
+		</div>
+		
+		<br>
+		<br>
+		
+		<input align="center"  type="checkbox" id="autoButton"><label for="autoButton">Régulation Automatique</label>
+		<br><br>
+		<div id="controlButtonSet" align="center" >
+		  <input type="checkbox" id="gfButton"><label for="gfButton">Compresseur</label>
+		  <input type="checkbox" id="heaterButton"><label for="heaterButton">Chauffage</label>
+		  <input type="checkbox" id="fanButton"><label for="fanButton">Ventilation</label>
+		</div>
+		
+		<div align="center" id="chart_div"> </div>
+	</div>
+ 
+
+    </body>
+</html>
