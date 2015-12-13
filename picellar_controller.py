@@ -184,7 +184,7 @@ def hvacControler(current_temp, temp_max, temp_min):
 		print('Temperature is in range, so no compressor necessary.')
 		setHeating(False)
 		setCooling(False)
-		if (temp_max - temp_min) > 1:
+		if (temp_max - temp_min) > picellar_sharedData.fanMaxTempDiff:
 			print('Temperature difference too high - Activating fan')
 			setFan(True)
 		else:

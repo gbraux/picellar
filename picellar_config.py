@@ -16,6 +16,7 @@ lIsAuto = "Mode Automatique"
 setTemperatureMax = 12.5
 setTemperatureMin = 11.5
 threshold = 0.5
+fanMaxTempDiff = 0.5
 
 # DEFAULT MODES
 DEFAULT_STATE_MODE_AUTO = True # 1 : Auto / 0 : Manual (1 = Default)
