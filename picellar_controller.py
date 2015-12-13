@@ -120,13 +120,10 @@ def setCooling(toogle):
 def getCooling():
 	return picellar_sharedData.coolingOn
 	
-def hvacControler(current_temp):
+def hvacControler(current_temp, temp_max, temp_min):
 
 	global COMPRESSOR_STICK_TIME
 	global lastCompressorEnableTime
-	
-	# FAN FORCE
-	setFan(True)
 	
 	# This function is called if the compressor is in heat, cool or auto mode.
 	# First check the current temperature, set temperature, and threshold.
@@ -184,18 +181,22 @@ def hvacControler(current_temp):
 		return
 	
 	if((not hotterThanMax) and (not coolerThanMin)):
-		setHeating(False)
 		print('Temperature is in range, so no compressor necessary.')
+		setHeating(False)
 		setCooling(False)
-		# if(settings['fan_mode']=='auto')
-			# setFan(False);
+		if (temp_max - temp_min) > 1:
+			print('Temperature difference too high - Activating fan')
+			setFan(True)
+		else:
+			print('No temperature difference - Disabling Fan')
+			setFan(False)
 	
 	elif(hotterThanMax):
 		print('Temperature is too warm and A/C is enabled, activating A/C.')
-		#setFan(True)
 		if(picellar_sharedData.heatingOn):
 			setHeating(False)
 		setCooling(True)
+		setFan(True);
 
 	elif(coolerThanMin):
 		print('Temperature is too cold and heating is enabled, activating heater.')
@@ -203,6 +204,7 @@ def hvacControler(current_temp):
 		if(picellar_sharedData.coolingOn):
 			setCooling(False)
 		setHeating(True)
+		setFan(True);
 
 def initDB():
 	conn = sqlite3.connect('tempdb.db', detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -277,16 +279,21 @@ def mainThread():
 			print "Sensor Data (humidity) : " + str(sensor.humidity)
 			print
 			
-		temp_moy = (tmp_sens[1].temperature + tmp_sens[2].temperature) / 2
+		temp_moy = (tmp_sens[0].temperature + tmp_sens[1].temperature + tmp_sens[2].temperature) / 3
+		temp_max = max([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
+		temp_min = min([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
 		
 		print "Temperature Moyenne : " + str(temp_moy)
+		print "Temperature Maxi : " + str(temp_max)
+		print "Temperature Mini : " + str(temp_min)
+		print "Temperature Diff : " + str(temp_max - temp_min)
 		
 		print
 		
 		print "State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
 		
 		if (picellar_sharedData.STATE_MODE_AUTO):
-			hvacControler(temp_moy)
+			hvacControler(temp_moy, temp_max, temp_min)
 		
 		
 		writeDB(
