@@ -100,3 +100,48 @@ error: [Errno 32] Broken pipe
   GPIO.cleanup()
 /home/pi/picellar/picellar_controller.py:245: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
   GPIO.cleanup()
+/home/pi/picellar/picellar_controller.py:245: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
+  GPIO.cleanup()
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 552, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 505, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/home/pi/picellar/picellar_controller.py", line 296, in mainThread
+    hvacControler(temp_moy, temp_max, temp_min)
+  File "/home/pi/picellar/picellar_controller.py", line 187, in hvacControler
+    if (temp_max - temp_min) > picellar_sharedData.fanMaxTempDiff:
+AttributeError: 'module' object has no attribute 'fanMaxTempDiff'
+
+Exception SystemExit: 0 in <module 'threading' from '/usr/lib/python2.7/threading.pyc'> ignored
+/home/pi/picellar/picellar_controller.py:245: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
+  GPIO.cleanup()
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 552, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 505, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/home/pi/picellar/picellar_controller.py", line 296, in mainThread
+    hvacControler(temp_moy, temp_max, temp_min)
+  File "/home/pi/picellar/picellar_controller.py", line 187, in hvacControler
+    if (temp_max - temp_min) > picellar_sharedData.fanMaxTempDiff:
+AttributeError: 'module' object has no attribute 'fanMaxTempDiff'
+
+/home/pi/picellar/picellar_controller.py:245: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
+  GPIO.cleanup()
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 552, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 505, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/home/pi/picellar/picellar_controller.py", line 296, in mainThread
+    hvacControler(temp_moy, temp_max, temp_min)
+  File "/home/pi/picellar/picellar_controller.py", line 187, in hvacControler
+    if (temp_max - temp_min) > picellar_sharedData.fanMaxTempDiff:
+AttributeError: 'module' object has no attribute 'fanMaxTempDiff'
+
+/home/pi/picellar/picellar_controller.py:245: RuntimeWarning: No channels have been set up yet - nothing to clean up!  Try cleaning up at the end of your program instead!
+  GPIO.cleanup()
