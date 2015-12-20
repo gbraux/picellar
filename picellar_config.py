@@ -15,11 +15,24 @@ lIsAuto = "Mode Automatique"
 # TEMPERATURES
 setTemperatureMax = 12.5
 setTemperatureMin = 11.5
-threshold = 0.5
-fanMaxTempDiff = 0.8
+threshold = 0.2
+fanMaxTempDiff = 1.5
 
 # DEFAULT MODES
 DEFAULT_STATE_MODE_AUTO = True # 1 : Auto / 0 : Manual (1 = Default)
 DEFAULT_STATE_COOLING = False #
 DEFAULT_STATE_HEATING = False #
 DEFAULT_STATE_FAN = True #
+
+AUTO_FORCE_FAN_ON = True
+ENABLE_RPI_WATCHDOG = True
+WATCHDOG_LOCATION = '/dev/watchdog'
+
+# GPIO
+COOL_GPIO = 16
+HEAT_GPIO = 20
+FAN_GPIO = 26
+
+# COMPRESSOR TIMERS
+COMPRESSOR_TOOGLE_TIME = 5400
+COMPRESSOR_RECOVERY_TIME = 600

@@ -118,7 +118,7 @@ def startThread():
 	
 	server = ThreadedHTTPServer(('0.0.0.0', 8080), MyRequestHandler)
 	print 'Starting server, use <Ctrl-C> to stop'
-	server.serve_forever()
+	#server.serve_forever()
 	
 	# --- CAN BE DELETED AFTER SUCESSFULL THREADING TEST ---
 	# Handler = MyRequestHandler
@@ -127,9 +127,9 @@ def startThread():
 	
 	#server.serve_forever() --> VRAIEMENT COMMENTE ...
 	
-	# thread = threading.Thread(target = server.serve_forever)
-	# thread.deamon = True
-	# thread.start()
+	thread = threading.Thread(target = server.serve_forever)
+	thread.deamon = True
+	thread.start()
 	# -------------------------------------------------------
 	
 	print "--- WEB Server started (8080) ---"

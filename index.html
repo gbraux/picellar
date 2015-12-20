@@ -19,7 +19,7 @@
 		
 		<style media="screen" type="text/css">
 		
-
+		*{font-family:Arial;}
 		
 		  #jauge_temp_div {
 		  float: left;
@@ -180,7 +180,7 @@
 			var chart = new google.visualization.Gauge(document.getElementById('jauge_hum_div'));
 			chart.draw(humGaugeGCdata, optionsHumGauge);
 			
-			$('#lastUpdateTime').text('Dernieres données des capteurs : '+ GaugeData["date"]["value"]);
+			$('#lastUpdateTime').text('Dernières données des capteurs : '+ GaugeData["date"]["value"]);
 		}
 		
 		function drawChart() {

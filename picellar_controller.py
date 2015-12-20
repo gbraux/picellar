@@ -14,23 +14,14 @@ import picellar_config
 import picellar_sensors
 import picellar_sharedData
 
-COOL_GPIO = 16
-HEAT_GPIO = 20
-FAN_GPIO = 26
-RECOVERY_TIME = 10
-LAST_COOLER_TOOGLE = 0
-TEMP_THRESHOLD = 1
-TEMP_THRESHOLD_MAX = 2
-COMPRESSOR_TOOGLE_TIME = 1800
-COMPRESSOR_RECOVERY_TIME = 600
-
-#COMPRESSOR_TOOGLE_TIME = 30
-#COMPRESSOR_RECOVERY_TIME = 30
 
 COMPRESSOR_LAST_START_TIME = 0
 COMPRESSOR_LAST_STOP_TIME = 0
 recoveryOn = 0
 lastCompressorEnableTime = 0
+wd_started = False
+
+wd_file=0
 
 def setMode(isAuto):
 	picellar_sharedData.STATE_MODE_AUTO = isAuto
@@ -42,11 +33,11 @@ def getMode():
 def setHeating(toogle):
 	if (toogle):
 		print "20 Chauffage ON"
-		GPIO.output(20, 0)
+		GPIO.output(picellar_config.HEAT_GPIO, 0)
 		picellar_sharedData.heatingOn = True
 	else:
 		print "20 Chauffage OFF"
-		GPIO.output(20, 1)
+		GPIO.output(picellar_config.HEAT_GPIO, 1)
 		picellar_sharedData.heatingOn = False
 
 def getHeating():
@@ -56,11 +47,11 @@ def setFan(toogle):
 	
 	if (toogle):
 		print "26 Fan ON"
-		GPIO.output(26, 0)
+		GPIO.output(picellar_config.FAN_GPIO, 0)
 		picellar_sharedData.fanOn = True
 	else:
 		print "26 Fan OFF"
-		GPIO.output(26, 1)
+		GPIO.output(picellar_config.FAN_GPIO, 1)
 		picellar_sharedData.fanOn = False
 		
 def getFan():
@@ -68,8 +59,6 @@ def getFan():
 		
 def setCooling(toogle):
 	
-	global COMPRESSOR_TOOGLE_TIME
-	global COMPRESSOR_RECOVERY_TIME
 	global COMPRESSOR_LAST_START_TIME
 	global COMPRESSOR_LAST_STOP_TIME
 	global recoveryOn	
@@ -79,29 +68,29 @@ def setCooling(toogle):
 	if (toogle):
 	
 		
-		if ((int(time.time()) > (COMPRESSOR_LAST_START_TIME+COMPRESSOR_TOOGLE_TIME)) & (COMPRESSOR_LAST_START_TIME != 0) & (picellar_sharedData.coolingOn == True)):
+		if ((int(time.time()) > (COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME)) & (COMPRESSOR_LAST_START_TIME != 0) & (picellar_sharedData.coolingOn == True)):
 			print "Compresseur en activité depuis trop longtemps ... Arret pour recovery"
 			print "16 GF OFF"
-			GPIO.output(16, 1)
+			GPIO.output(picellar_config.COOL_GPIO, 1)
 
 			COMPRESSOR_LAST_STOP_TIME = int(time.time())
 			picellar_sharedData.coolingOn = False
 			return
 		elif (picellar_sharedData.coolingOn == True):
-			print "Temp de run restant avant arret de compresseur pour recovery : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_START_TIME+COMPRESSOR_TOOGLE_TIME) - int(time.time())).strftime('%H:%M:%S')
+			print "Temp de run restant avant arret de compresseur pour recovery : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())).strftime('%H:%M:%S')
 	
 		
-		if ((int(time.time()) < (COMPRESSOR_LAST_STOP_TIME+COMPRESSOR_RECOVERY_TIME)) & (COMPRESSOR_LAST_STOP_TIME != 0)):
+		if ((int(time.time()) < (COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME)) & (COMPRESSOR_LAST_STOP_TIME != 0)):
 			print "Compresseur en recovery ... Démarrage impossible"
-			print "Temps de recovery restant : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_STOP_TIME+COMPRESSOR_RECOVERY_TIME) - int(time.time())).strftime('%H:%M:%S')
+			print "Temps de recovery restant : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())).strftime('%H:%M:%S')
 			print "16 GF OFF"
-			GPIO.output(16, 1)
+			GPIO.output(picellar_config.COOL_GPIO, 1)
 			picellar_sharedData.coolingOn = False
 			return
 
 			
 		print "16 GF ON"
-		GPIO.output(16, 0)
+		GPIO.output(picellar_config.COOL_GPIO, 0)
 		
 		if picellar_sharedData.coolingOn == False:
 			COMPRESSOR_LAST_START_TIME = int(time.time())
@@ -110,7 +99,7 @@ def setCooling(toogle):
 		
 	else:
 		print "16 GF OFF"
-		GPIO.output(16, 1)
+		GPIO.output(picellar_config.COOL_GPIO, 1)
 		
 		if picellar_sharedData.coolingOn == True:
 			COMPRESSOR_LAST_STOP_TIME = int(time.time())
@@ -125,32 +114,32 @@ def hvacControler(current_temp, temp_max, temp_min):
 	global COMPRESSOR_STICK_TIME
 	global lastCompressorEnableTime
 	
-	# This function is called if the compressor is in heat, cool or auto mode.
-	# First check the current temperature, set temperature, and threshold.
-	
-	# If the compressor is in the "stuck" period, just return.
-	# currentTime = int(time.time());
-	# if(currentTime < (lastCompressorEnableTime+COMPRESSOR_STICK_TIME)):
-		# print('Compressor currently stuck, so no change.');
-		# return;
-	
 	observedTemperature = current_temp
 	
 	setTemperatureMax = picellar_config.setTemperatureMax
 	setTemperatureMin = picellar_config.setTemperatureMin
 	threshold = picellar_config.threshold
 	
-	if(threshold < 0.5):
-		threshold = 0.5
-		print('*** Warning: Threshold too low. Setting to 0.5.')
+	#### Regles HVAC v1 ####----------------
+	# if(threshold < 0.5):
+		# threshold = 0.5
+		# print('*** Warning: Threshold too low. Setting to 0.5.')
+	#### -----------------------------------
+	
+	#### Regles HVAC v1 ####----------------
+	if(threshold < 0.2):
+		threshold = 0.2
+		print('*** Warning: Threshold too low. Setting to 0.2.')
+	#### -----------------------------------
 	
 	if((setTemperatureMax <= setTemperatureMin) or ((setTemperatureMax-setTemperatureMin) < (threshold*2))):
 		print('*** Error: Overlap between set minimum and maximum temperatures.')
 		return
 	
 	print('Current temperature: '+str(observedTemperature)+' C')
-	print('Set minimum temperature: '+str(setTemperatureMin)+' C')
-	print('Set maximum temperature: '+str(setTemperatureMax)+' C')
+	print('Minimum temperature configured : '+str(setTemperatureMin)+' C')
+	print('Maximum temperature configured : '+str(setTemperatureMax)+' C')
+	print('Treshold configured : '+str(threshold)+' C')
 	print('')
 	
 	# The A/C (and fan) should be enabled if the observed temperature is warmer than
@@ -159,9 +148,31 @@ def hvacControler(current_temp, temp_max, temp_min):
 	hotterThanMax = False
 	coolerThanMin = False
 	
+	#### Regles HVAC v1 ####----------------
+	
 	# Checking to see if it's warmer than the high range (ie. if the A/C should turn on)
 	# If the A/C is on right now, it should stay on until it goes past the threshold
-	if(picellar_sharedData.coolingOn and (setTemperatureMax < (observedTemperature+threshold))):
+	# if(picellar_sharedData.coolingOn and (setTemperatureMax < (observedTemperature+threshold))):
+		# hotterThanMax = True
+	# If the A/C is not on right now, it should turn on when it hits the threshold
+	# if((not picellar_sharedData.coolingOn) and (setTemperatureMax < (observedTemperature-threshold))):
+		# hotterThanMax = True
+
+	# Checking to see if it's colder than the low range (ie. if the heater should turn on)
+	# If the heater is on right now, it should stay on until it goes past the threshold
+	# if(picellar_sharedData.heatingOn and (setTemperatureMin > (observedTemperature-threshold))):
+		# coolerThanMin = True
+	# If the heater is not on right now, it should turn on when it hits the threshold
+	# if((not picellar_sharedData.heatingOn) and (setTemperatureMin > (observedTemperature+threshold))):
+		# coolerThanMin = True
+
+	### -------------------------------------
+	
+	#### Regles HVAC v2 ####----------------
+	
+	# Checking to see if it's warmer than the high range (ie. if the A/C should turn on)
+	# If the A/C is on right now, it should stay on until it goes past the threshold
+	if(picellar_sharedData.coolingOn and (observedTemperature > setTemperatureMin)):
 		hotterThanMax = True
 	# If the A/C is not on right now, it should turn on when it hits the threshold
 	if((not picellar_sharedData.coolingOn) and (setTemperatureMax < (observedTemperature-threshold))):
@@ -169,12 +180,13 @@ def hvacControler(current_temp, temp_max, temp_min):
 
 	# Checking to see if it's colder than the low range (ie. if the heater should turn on)
 	# If the heater is on right now, it should stay on until it goes past the threshold
-	if(picellar_sharedData.heatingOn and (setTemperatureMin > (observedTemperature-threshold))):
+	if(picellar_sharedData.heatingOn and (observedTemperature < setTemperatureMax)):
 		coolerThanMin = True
 	# If the heater is not on right now, it should turn on when it hits the threshold
 	if((not picellar_sharedData.heatingOn) and (setTemperatureMin > (observedTemperature+threshold))):
 		coolerThanMin = True
 
+	### -------------------------------------
 	
 	if(hotterThanMax and coolerThanMin):
 		print('*** Error: Outside of both ranges somehow.')
@@ -184,8 +196,8 @@ def hvacControler(current_temp, temp_max, temp_min):
 		print('Temperature is in range, so no compressor necessary.')
 		setHeating(False)
 		setCooling(False)
-		if (temp_max - temp_min) > picellar_config.fanMaxTempDiff:
-			print('Temperature difference too high - Activating fan')
+		if ((temp_max - temp_min) > picellar_config.fanMaxTempDiff) | (picellar_config.AUTO_FORCE_FAN_ON):
+			print('Fan forced ON, or temperature difference too high - Activating fan')
 			setFan(True)
 		else:
 			print('No temperature difference - Disabling Fan')
@@ -200,7 +212,6 @@ def hvacControler(current_temp, temp_max, temp_min):
 
 	elif(coolerThanMin):
 		print('Temperature is too cold and heating is enabled, activating heater.')
-		#setFan(True)
 		if(picellar_sharedData.coolingOn):
 			setCooling(False)
 		setHeating(True)
@@ -268,6 +279,8 @@ def signal_term_handler(signal, frame):
 
 def mainThread():
 
+	global wd_started
+	
 	while True:		
 	
 		print "----------------------------------"
@@ -279,18 +292,18 @@ def mainThread():
 			print "Sensor Data (humidity) : " + str(sensor.humidity)
 			print
 			
-		temp_moy = (tmp_sens[0].temperature + tmp_sens[1].temperature + tmp_sens[2].temperature) / 3
+		temp_moy = (tmp_sens[0].temperature + tmp_sens[1].temperature) / 2
 		temp_max = max([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
 		temp_min = min([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
 		
 		print "Temperature Moyenne : " + str(temp_moy)
 		print "Temperature Maxi : " + str(temp_max)
 		print "Temperature Mini : " + str(temp_min)
-		print "Temperature Diff : " + str(temp_max - temp_min)
+		print "Temperature Difference : " + str(temp_max - temp_min)
 		
 		print
 		
-		print "State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
+		print "Current State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
 		
 		if (picellar_sharedData.STATE_MODE_AUTO):
 			hvacControler(temp_moy, temp_max, temp_min)
@@ -306,45 +319,53 @@ def mainThread():
 		picellar_sharedData.heatingOn,
 		picellar_sharedData.fanOn)
 		
-		# cursor.execute("""INSERT INTO celltemp(time, t1, t2, t3, hum1, picellar_sharedData.coolingOn, picellar_sharedData.heatingOn, picellar_sharedData.fanOn) VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (
-		# datetime.datetime.now(),
-		# tmp_sens[0].temperature,
-		# tmp_sens[1].temperature,
-		# tmp_sens[2].temperature,
-		# tmp_sens[2].humidity,
-		# picellar_sharedData.coolingOn,
-		# picellar_sharedData.heatingOn,
-		# picellar_sharedData.fanOn
-		# ))
-		# conn.commit()
-		
 		print
+		print(wd_started)
+		# WATCHDOG #################
+		if picellar_config.ENABLE_RPI_WATCHDOG:
 		
-		time.sleep(60)
+			while not wd_started:
+				print "\r\n\r\n########### WAITING FOR WD STARTUP ###########\r\n\r\n"
+				time.sleep(1)
+				
+			wd_file.write('a')
+			print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+			st = time.time()
+			st2 = time.time()
+			
+			while time.time() - st < 60:
+				if time.time() - st2 > 5:
+					wd_file.write('a')
+					print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+					st2 = time.time()
+				time.sleep(1)
+				
+		############################
+		else:			
+			time.sleep(60)
 	
 	GPIO.cleanup()
 	
 def cleanupGPIO():
 	print "16 GF OFF"
-	GPIO.output(16, 1)
+	GPIO.output(picellar_config.COOL_GPIO, 1)
 	
 	print "20 CHAUF OFF"
-	GPIO.output(20, 1)
+	GPIO.output(picellar_config.HEAT_GPIO, 1)
 	
 	print "26 Ventil OFF"
-	GPIO.output(26, 1)
+	GPIO.output(picellar_config.FAN_GPIO, 1)
 	GPIO.cleanup() # cleanup all GPIO
 
 try:
 	if __name__ == "__main__":
-		
+
 		# SQL ######################
 		initDB()
 		# GPIO #####################
 		initGPIO()
-		
+
 		signal.signal(signal.SIGTERM, signal_term_handler)
-		#mainThread()
 		
 		t1 = threading.Thread(target=mainThread)
 		t1.daemon = True
@@ -352,11 +373,28 @@ try:
 		
 		server = picellar_api.startThread()
 		
+		ct = time.time()
 		while True:
+			
+			# WATCHDOG #################
+			if picellar_config.ENABLE_RPI_WATCHDOG:
+				if (wd_started == False) & (time.time() - ct > 120):
+					wd_file = open(picellar_config.WATCHDOG_LOCATION, 'r+', 0)
+					wd_started = True
+					print "\r\n\r\n########### WATCHDOG INITIALIZED - Starting countdown ... ###########\r\n\r\n"
+			############################
+
 			time.sleep(1)
 
 except (KeyboardInterrupt, SystemExit):
 	cleanupGPIO()
-	# server.shutdown()
+	server.shutdown()
 	print "--- WEB Server stopped ---"
+	
+	# WATCHDOG STOP #################
+	if picellar_config.ENABLE_RPI_WATCHDOG & wd_started:
+		wd_file.write('V')
+		wd_file.close()
+		print "--- Watchdog Timer stopped ---"
+	############################
 	sys.exit(0)
