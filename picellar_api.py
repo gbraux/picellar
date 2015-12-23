@@ -39,7 +39,8 @@ def getModeJson():
 	"fanOn" : {"label" : picellar_config.lFanOn, "value" : picellar_controller.getFan()}
 	}
 	
-	print dataDict
+	if picellar_config.HTTP_STDOUT_LOGS:
+		print dataDict
 	
 	return json.dumps(dataDict)
 
@@ -52,8 +53,8 @@ def getDataJson(isGoogleChart, startDate, endDate):
 	#sqlCommand = "SELECT time, AVG(t1), AVG(t2),  AVG(t3), AVG(hum1), AVG(coolingOn), AVG(heatingOn), AVG(fanOn) FROM celltemp WHERE time > datetime('" + startDate.strftime('%Y-%m-%d %H:%M:%S') + "') AND time < datetime('" + endDate.strftime('%Y-%m-%d %H:%M:%S') + "') GROUP BY (Id - 1) / (((SELECT Count(*) FROM celltemp) + 4) / 300)"
 	
 	sqlCommand = "SELECT time, AVG(t1), AVG(t2),  AVG(t3), AVG(hum1), AVG(coolingOn), AVG(heatingOn), AVG(fanOn) FROM celltemp WHERE time > datetime('" + startDate.strftime('%Y-%m-%d %H:%M:%S') + "') AND time < datetime('" + endDate.strftime('%Y-%m-%d %H:%M:%S') + "') GROUP BY (Id - 1) / (((SELECT Count(*) FROM celltemp WHERE time > datetime('" + startDate.strftime('%Y-%m-%d %H:%M:%S') + "') AND time < datetime('" + endDate.strftime('%Y-%m-%d %H:%M:%S') + "')) + 4) / 300)"
-
-	print sqlCommand
+	if picellar_config.HTTP_STDOUT_LOGS:
+		print sqlCommand
 	
 	cursor.execute(sqlCommand)
 	
@@ -229,4 +230,5 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				picellar_controller.setFan(modeDatas["fanOn"])
 		
 	def log_message(self, format, *args):
-		sys.stdout.write("%s --> [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format%args))
+		if picellar_config.HTTP_STDOUT_LOGS:
+			sys.stdout.write("%s --> [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format%args))

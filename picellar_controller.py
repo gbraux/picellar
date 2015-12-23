@@ -9,10 +9,13 @@ import datetime
 import threading
 import signal
 import sys
+import socket
+import struct
 import picellar_api
 import picellar_config
 import picellar_sensors
 import picellar_sharedData
+from subprocess import call
 
 
 COMPRESSOR_LAST_START_TIME = 0
@@ -20,7 +23,6 @@ COMPRESSOR_LAST_STOP_TIME = 0
 recoveryOn = 0
 lastCompressorEnableTime = 0
 wd_started = False
-
 wd_file=0
 
 def setMode(isAuto):
@@ -63,7 +65,11 @@ def setCooling(toogle):
 	global COMPRESSOR_LAST_STOP_TIME
 	global recoveryOn	
 	
-	
+	# print("Temp de run restant avant arret de compresseur pour recovery : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())).strftime('%H:%M:%S'))
+	# print("En format unix : " + str((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())))
+	# print("Temps de recovery restant : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())).strftime('%H:%M:%S'))
+	# print("En format unix : " + str((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())))
+	# print("Nouvelle Conversion : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time()))))
 	
 	if (toogle):
 	
@@ -110,12 +116,8 @@ def getCooling():
 	return picellar_sharedData.coolingOn
 	
 def hvacControler(current_temp, temp_max, temp_min):
-
-	global COMPRESSOR_STICK_TIME
-	global lastCompressorEnableTime
 	
 	observedTemperature = current_temp
-	
 	setTemperatureMax = picellar_config.setTemperatureMax
 	setTemperatureMin = picellar_config.setTemperatureMin
 	threshold = picellar_config.threshold
@@ -283,7 +285,17 @@ def mainThread():
 	
 	while True:		
 	
-		print "----------------------------------"
+		# FORCE WATCHDOG JUST BEFORE CRITICAL FUNCTION #########
+		if wd_started:
+			wd_file.write('a')
+			print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+		##########################
+		
+		print "\r\n########### STARTING SENSORS & HVAC REFRESH ###########\r\n"
+		print "Current Time : " + time.ctime()
+		
+
+		
 		tmp_sens = picellar_sensors.Read_temp_sensors()
 		for sensor  in tmp_sens:
 			print
@@ -303,10 +315,22 @@ def mainThread():
 		
 		print
 		
-		print "Current State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
+		#print "Current State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
 		
 		if (picellar_sharedData.STATE_MODE_AUTO):
 			hvacControler(temp_moy, temp_max, temp_min)
+		
+		# setCooling(True)
+		# time.sleep(5)
+		# setCooling(False)
+		# time.sleep(5)
+		# setCooling(True)
+		# time.sleep(5)
+		# setCooling(False)
+		# time.sleep(5)
+		# setCooling(True)
+		# time.sleep(5)
+		# setCooling(False)
 		
 		
 		writeDB(
@@ -319,20 +343,28 @@ def mainThread():
 		picellar_sharedData.heatingOn,
 		picellar_sharedData.fanOn)
 		
-		print
-		print(wd_started)
-		# WATCHDOG #################
-		if picellar_config.ENABLE_RPI_WATCHDOG:
+
 		
-			while not wd_started:
-				print "\r\n\r\n########### WAITING FOR WD STARTUP ###########\r\n\r\n"
-				time.sleep(1)
-				
+		print "\r\n########### SENSORS & HVAC REFRESH ENDED ###########\r\n"
+		
+		# FORCE WATCHDOG JUST AFTER CRITICAL FUNCTION #########
+		if wd_started:
 			wd_file.write('a')
 			print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+		##########################
+		
+		# WATCHDOG #################
+		if picellar_config.ENABLE_RPI_WATCHDOG:
+			if not wd_started:
+				while not wd_started:
+					print "\r\n\r\n########### WAITING FOR WD STARTUP ###########\r\n\r\n"
+					time.sleep(1)
+				
+				wd_file.write('a')
+				print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+					
 			st = time.time()
 			st2 = time.time()
-			
 			while time.time() - st < 60:
 				if time.time() - st2 > 5:
 					wd_file.write('a')
@@ -357,11 +389,57 @@ def cleanupGPIO():
 	GPIO.output(picellar_config.FAN_GPIO, 1)
 	GPIO.cleanup() # cleanup all GPIO
 
+def checkTimeAccuracy():
+	try:
+		print "\r\n########### CHECHING RPi CLOCK ACCURACY ###########\r\n"
+	
+		client = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+		client.settimeout(5)
+		data = '\x1b' + 47 * '\0'
+		client.sendto( data, ( picellar_config.NTP_SERVER, picellar_config.NTP_PORT ))
+		data, address = client.recvfrom( 1024 )
+		if data:
+			print 'Response received from:', address
+			systime = time.time()
+			t = struct.unpack( '!12I', data )[10]
+			t -= 2208988800L #seconds since Epoch
+			print '\tNTP Time=%s' % time.ctime(t)
+			print "NTP Time (Unix)    : " + str(t)
+			print "System Time (Unix) : " + str(systime)
+			print "Time Difference : " + str(abs(t - systime))
+			
+			if abs(t - systime) > 60:
+				print "Clock Not Accurate - Returning False to Main Program\r\n"
+				print "###################################################\r\n"
+				return False
+			else:
+				print "Clock is (rather) Accurate - Returning True to Main Program\r\n"
+				print "###################################################\r\n"
+				return True
+	except:
+		print "NTP Request Error (DNS ? Network ? ...). Returning False\r\n"
+		print "###################################################\r\n"
+		return False
+
 try:
 	if __name__ == "__main__":
 
+		# SET UNBUFFERED STDOUT #####
+		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+		############################
+		
+		# TIME ACCURACY CHECK ######
+		ntpCount = 0
+		while(not checkTimeAccuracy()):
+			if ntpCount == 5:
+				break
+			ntpCount = ntpCount + 1
+			time.sleep(10)
+		############################
+		
 		# SQL ######################
 		initDB()
+		
 		# GPIO #####################
 		initGPIO()
 
@@ -378,11 +456,19 @@ try:
 			
 			# WATCHDOG #################
 			if picellar_config.ENABLE_RPI_WATCHDOG:
+				
 				if (wd_started == False) & (time.time() - ct > 120):
+					# Set WD timer to 15sec (C app call)
+					call(["./wdt_set_timer"])
 					wd_file = open(picellar_config.WATCHDOG_LOCATION, 'r+', 0)
 					wd_started = True
 					print "\r\n\r\n########### WATCHDOG INITIALIZED - Starting countdown ... ###########\r\n\r\n"
 			############################
+			# WATCHDOG HACK ? ##########
+			#	if (wd_started):
+			#		wd_file.write('a')
+					#print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+			############################		
 
 			time.sleep(1)
 
