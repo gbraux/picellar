@@ -83,12 +83,12 @@ def setCooling(toogle):
 			picellar_sharedData.coolingOn = False
 			return
 		elif (picellar_sharedData.coolingOn == True):
-			print "Temp de run restant avant arret de compresseur pour recovery : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())).strftime('%H:%M:%S')
+			print "Temp de run restant avant arret de compresseur pour recovery : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())))
 	
 		
 		if ((int(time.time()) < (COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME)) & (COMPRESSOR_LAST_STOP_TIME != 0)):
 			print "Compresseur en recovery ... Démarrage impossible"
-			print "Temps de recovery restant : " + datetime.datetime.fromtimestamp((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())).strftime('%H:%M:%S')
+			print "Temps de recovery restant : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())))
 			print "16 GF OFF"
 			GPIO.output(picellar_config.COOL_GPIO, 1)
 			picellar_sharedData.coolingOn = False
@@ -424,8 +424,12 @@ def checkTimeAccuracy():
 try:
 	if __name__ == "__main__":
 
-		# SET UNBUFFERED STDOUT #####
+		# SET UNBUFFERED STDOUT ####
 		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+		############################
+		
+		# START WEB SERVER #########
+		server = picellar_api.startThread()
 		############################
 		
 		# TIME ACCURACY CHECK ######
@@ -449,7 +453,7 @@ try:
 		t1.daemon = True
 		t1.start()
 		
-		server = picellar_api.startThread()
+		
 		
 		ct = time.time()
 		while True:

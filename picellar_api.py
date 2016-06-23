@@ -68,7 +68,14 @@ def getDataJson(isGoogleChart, startDate, endDate):
 			data += ",["
 		
 	#	if isGoogleChart:
-			data += row[0].strftime('"Date(%Y,%m,%d,%H,%M,%S)"') + "," + str(row[1]) + "," + str(row[3]) + "," + str(row[2]) + "," + str(row[4]) + "," + str(row[5]) + "," + str(row[6]) + "," + str(row[7])
+			# Javascript Month Hack for GChart (Javascript Month is 0-11, not 1-12)
+			jsMonth = row[0].month - 1
+			badDate = row[0].strftime('"Date(%Y,month,%d,%H,%M,%S)"')
+			goodDate = badDate.replace("month", str(jsMonth))
+	
+			#data += row[0].strftime('"Date(%Y,%m,%d,%H,%M,%S)"') + "," + str(row[1]) + "," + str(row[3]) + "," + str(row[2]) + "," + str(row[4]) + "," + str(row[5]) + "," + str(row[6]) + "," + str(row[7])
+			data += goodDate + "," + str(row[1]) + "," + str(row[3]) + "," + str(row[2]) + "," + str(row[4]) + "," + str(row[5]) + "," + str(row[6]) + "," + str(row[7])
+
 	#	else:
 	#		data += str(row[0]) + "," + str(row[1]) + "," + str(row[2]) + "," + str(row[3]) + "," + str(row[4]) + "," + str(row[5]) + "," + str(row[6]) + "," + str(row[7])
 		
