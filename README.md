@@ -11,6 +11,7 @@ To protect the wine in case of application/RPi crash, it also has support for th
 
 # My setup
 - Old Fridge with original temp regulation system removed. Can easily fit 150-180 75cl bottles.
+- Raspberry-PI 2 with wifi dongle
 - 2x Dallas 1-Wire temperature sensors (top & bottom of the cellar)
 - 1x DHT22 Temperature/Humidity sensor (middle of the cellar)
 - 1x 220v Heating cable mounted inside the fridge
