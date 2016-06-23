@@ -1,0 +1,220 @@
+
+########### CHECHING RPi CLOCK ACCURACY ###########
+
+Response received from: ('62.210.204.185', 123)
+	NTP Time=Tue Dec 22 19:54:25 2015
+NTP Time (Unix)    : 1450810465
+System Time (Unix) : 1450810465.14
+Time Difference : 0.139900922775
+Clock is (rather) Accurate - Returning True to Main Program
+
+###################################################
+
+
+--> Initializing control relays (all off)
+16 GF OFF
+20 Chauffage OFF
+26 Fan OFF
+--> Setting default control relays values
+16 GF OFF
+20 Chauffage OFF
+26 Fan ON
+
+----------------------------------
+Starting server, use <Ctrl-C> to stop
+--- WEB Server started (8080) ---
+box --> [22/Dec/2015 19:54:25] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+box --> [22/Dec/2015 19:54:25] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+box --> [22/Dec/2015 19:54:26] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+
+Sensor ID : 28-0315029f73ff
+Sensor Data (temperature) : 12.1
+Sensor Data (humidity) : None
+
+
+Sensor ID : 28-0415024564ff
+Sensor Data (temperature) : 12.0
+Sensor Data (humidity) : None
+
+
+Sensor ID : DHT22-1
+Sensor Data (temperature) : 12.4
+Sensor Data (humidity) : 71.9
+
+Temperature Moyenne : 12.05
+Temperature Maxi : 12.4
+Temperature Mini : 12.0
+Temperature Difference : 0.4
+
+Current State mode vu par le thread : True
+Current temperature: 12.05 C
+Minimum temperature configured : 11.5 C
+Maximum temperature configured : 12.5 C
+Treshold configured : 0.2 C
+
+Temperature is in range, so no compressor necessary.
+20 Chauffage OFF
+16 GF OFF
+Fan forced ON, or temperature difference too high - Activating fan
+26 Fan ON
+GUBRAUX-WS01 --> [22/Dec/2015 19:54:27] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+box --> [22/Dec/2015 19:54:28] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+GUBRAUX-WS01 --> [22/Dec/2015 19:54:30] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+16 GF OFF
+20 CHAUF OFF
+26 Ventil OFF
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+--- WEB Server stopped ---
+
+########### CHECHING RPi CLOCK ACCURACY ###########
+
+NTP Request Error (DNS ? Network ? ...). Returning False
+
+###################################################
+
+16 GF OFF
+
+########### CHECHING RPi CLOCK ACCURACY ###########
+
+NTP Request Error (DNS ? Network ? ...). Returning False
+
+###################################################
+
+16 GF OFF
+
+########### CHECHING RPi CLOCK ACCURACY ###########
+
+Response received from: ('62.210.28.176', 123)
+	NTP Time=Tue Dec 22 19:57:02 2015
+NTP Time (Unix)    : 1450810622
+System Time (Unix) : 1450810622.6
+Time Difference : 0.602493047714
+Clock is (rather) Accurate - Returning True to Main Program
+
+###################################################
+
+
+--> Initializing control relays (all off)
+16 GF OFF
+20 Chauffage OFF
+26 Fan OFF
+--> Setting default control relays values
+16 GF OFF
+20 Chauffage OFF
+26 Fan ON
+
+----------------------------------
+Starting server, use <Ctrl-C> to stop
+--- WEB Server started (8080) ---
+box --> [22/Dec/2015 19:57:02] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+box --> [22/Dec/2015 19:57:02] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+GUBRAUX-WS01 --> [22/Dec/2015 19:57:02] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+GUBRAUX-WS01 --> [22/Dec/2015 19:57:04] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+
+Sensor ID : 28-0315029f73ff
+Sensor Data (temperature) : 12.1
+Sensor Data (humidity) : None
+
+
+Sensor ID : 28-0415024564ff
+Sensor Data (temperature) : 12.0
+Sensor Data (humidity) : None
+
+
+Sensor ID : DHT22-1
+Sensor Data (temperature) : 12.4
+Sensor Data (humidity) : 72.0
+
+Temperature Moyenne : 12.05
+Temperature Maxi : 12.4
+Temperature Mini : 12.0
+Temperature Difference : 0.4
+
+Current State mode vu par le thread : True
+Current temperature: 12.05 C
+Minimum temperature configured : 11.5 C
+Maximum temperature configured : 12.5 C
+Treshold configured : 0.2 C
+
+Temperature is in range, so no compressor necessary.
+20 Chauffage OFF
+16 GF OFF
+Fan forced ON, or temperature difference too high - Activating fan
+26 Fan ON
+box --> [22/Dec/2015 19:57:05] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+box --> [22/Dec/2015 19:57:06] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+box --> [22/Dec/2015 19:57:11] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+box --> [22/Dec/2015 19:57:12] "GET /picellar/api/v1/getdata/last HTTP/1.1" 200 -
+GUBRAUX-WS01 --> [22/Dec/2015 19:57:12] "GET /picellar/api/v1/getmode/ HTTP/1.1" 200 -
+{'isauto': {'value': True, 'label': 'Mode Automatique'}, 'heatingOn': {'value': False, 'label': 'Chauffage'}, 'fanOn': {'value': True, 'label': 'Ventilation'}, 'coolingOn': {'value': False, 'label': 'Compresseur'}}
+
+
+########### WAITING FOR WD STARTUP ###########
+
+
+16 GF OFF
+20 CHAUF OFF
+26 Ventil OFF
+--- WEB Server stopped ---
