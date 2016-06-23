@@ -1,5 +1,7 @@
 # Picellar
 
+![My image](https://raw.githubusercontent.com/gbraux/picellar/master/screenshot.png)
+
 Picellar is a Rapsberry-PI based controller (in Python) for homemades wine cellars (based on an old fridge).
 
 It gets data from several sensors (temp & humidity) and have direct control over the fridge (compressor, fan and heating element)
