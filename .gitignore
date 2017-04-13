@@ -1,1 +1,5 @@
 *.pyc
+tempdb.db
+picellar_debug.log
+picellar_errors.log
+oldDB/
