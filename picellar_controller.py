@@ -365,7 +365,7 @@ def mainThread():
 					
 			st = time.time()
 			st2 = time.time()
-			while time.time() - st < 60:
+			while time.time() - st < picellar_config.SENSORS_REFRESH_TIME:
 				if time.time() - st2 > 5:
 					wd_file.write('a')
 					print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
@@ -374,7 +374,7 @@ def mainThread():
 				
 		############################
 		else:			
-			time.sleep(60)
+			time.sleep(picellar_config.SENSORS_REFRESH_TIME)
 	
 	GPIO.cleanup()
 	
