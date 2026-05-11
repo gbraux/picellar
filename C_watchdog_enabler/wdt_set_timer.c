@@ -22,7 +22,10 @@ Lesser General Public License for more details.
 #include <stdio.h>
 #include <fcntl.h>
 #include <linux/watchdog.h> 
- 
+#include <strings.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 int main (int argc, char *argv[])
 {
 	printf("========================================\n");

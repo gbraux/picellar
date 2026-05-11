@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import SimpleHTTPServer
-import SocketServer
+import http.server
+import socketserver
 import re
 import sqlite3
 import datetime
-import urlparse
+import urllib.parse
 import json
 import threading
 import time
 import sys
 import signal
 import logging
-import cgi
+#import cgi
 import picellar_controller
 import picellar_config
-import BaseHTTPServer
+import http.server
 
 
 
@@ -40,7 +40,7 @@ def getModeJson():
 	}
 	
 	if picellar_config.HTTP_STDOUT_LOGS:
-		print dataDict
+		print(dataDict)
 	
 	return json.dumps(dataDict)
 
@@ -54,7 +54,7 @@ def getDataJson(isGoogleChart, startDate, endDate):
 	
 	sqlCommand = "SELECT time, AVG(t1), AVG(t2),  AVG(t3), AVG(hum1), AVG(coolingOn), AVG(heatingOn), AVG(fanOn) FROM celltemp WHERE time > datetime('" + startDate.strftime('%Y-%m-%d %H:%M:%S') + "') AND time < datetime('" + endDate.strftime('%Y-%m-%d %H:%M:%S') + "') GROUP BY (Id - 1) / (((SELECT Count(*) FROM celltemp WHERE time > datetime('" + startDate.strftime('%Y-%m-%d %H:%M:%S') + "') AND time < datetime('" + endDate.strftime('%Y-%m-%d %H:%M:%S') + "')) + 4) / 300)"
 	if picellar_config.HTTP_STDOUT_LOGS:
-		print sqlCommand
+		print(sqlCommand)
 	
 	cursor.execute(sqlCommand)
 	
@@ -125,7 +125,7 @@ def startThread():
 	
 	
 	server = ThreadedHTTPServer(('0.0.0.0', 8080), MyRequestHandler)
-	print 'Starting server, use <Ctrl-C> to stop'
+	print('Starting server, use <Ctrl-C> to stop')
 	#server.serve_forever()
 	
 	# --- CAN BE DELETED AFTER SUCESSFULL THREADING TEST ---
@@ -140,15 +140,15 @@ def startThread():
 	thread.start()
 	# -------------------------------------------------------
 	
-	print "--- WEB Server started (8080) ---"
+	print("--- WEB Server started (8080) ---")
 	return server
 
 
 	
-class ThreadedHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     """Handle requests in a separate thread."""
 	
-class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
 	def do_GET(self):
 	
 		####### !!!!!! FOR GOOGLE CHART HACK !!!!!! #######
@@ -167,7 +167,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_header('Access-Control-Allow-Origin', '*')
 			self.end_headers()
 
-			query_components = urlparse.parse_qs(urlparse.urlparse(self.path).query)
+			query_components = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
 			
 			startDate = datetime.datetime.fromtimestamp(float(query_components["startDate"][0]))
 			endDate = datetime.datetime.fromtimestamp(float(query_components["endDate"][0]))
@@ -189,7 +189,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_header('Content-Type', 'application/json')
 			self.send_header('Access-Control-Allow-Origin', '*')
 			self.end_headers()
-			self.wfile.write(getLastDataJson(False))
+			self.wfile.write(getLastDataJson(False).encode())
 			
 		elif None != re.search('/picellar/api/v1/getdata/range', self.path):
 
@@ -198,7 +198,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.send_header('Access-Control-Allow-Origin', '*')
 			self.end_headers()
 
-			query_components = urlparse.parse_qs(urlparse.urlparse(self.path).query)
+			query_components = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
 			
 			startDate = datetime.datetime.fromtimestamp(float(query_components["startDate"][0]))
 			endDate = datetime.datetime.fromtimestamp(float(query_components["endDate"][0]))
@@ -213,7 +213,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.wfile.write(getModeJson())
 
 		else:
-			return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+			return http.server.SimpleHTTPRequestHandler.do_GET(self)
 
 	def do_POST(self):
 	
@@ -239,3 +239,5 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	def log_message(self, format, *args):
 		if picellar_config.HTTP_STDOUT_LOGS:
 			sys.stdout.write("%s --> [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format%args))
+
+

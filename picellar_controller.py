@@ -27,18 +27,18 @@ wd_file=0
 
 def setMode(isAuto):
 	picellar_sharedData.STATE_MODE_AUTO = isAuto
-	print "Changement de mode. IsAuto = " + str(picellar_sharedData.STATE_MODE_AUTO)
+	print("Changement de mode. IsAuto = " + str(picellar_sharedData.STATE_MODE_AUTO))
 
 def getMode():
 	return picellar_sharedData.STATE_MODE_AUTO
 
 def setHeating(toogle):
 	if (toogle):
-		print "20 Chauffage ON"
+		print("20 Chauffage ON")
 		GPIO.output(picellar_config.HEAT_GPIO, 0)
 		picellar_sharedData.heatingOn = True
 	else:
-		print "20 Chauffage OFF"
+		print("20 Chauffage OFF")
 		GPIO.output(picellar_config.HEAT_GPIO, 1)
 		picellar_sharedData.heatingOn = False
 
@@ -48,11 +48,11 @@ def getHeating():
 def setFan(toogle):
 	
 	if (toogle):
-		print "26 Fan ON"
+		print("26 Fan ON")
 		GPIO.output(picellar_config.FAN_GPIO, 0)
 		picellar_sharedData.fanOn = True
 	else:
-		print "26 Fan OFF"
+		print("26 Fan OFF")
 		GPIO.output(picellar_config.FAN_GPIO, 1)
 		picellar_sharedData.fanOn = False
 		
@@ -75,27 +75,27 @@ def setCooling(toogle):
 	
 		
 		if ((int(time.time()) > (COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME)) & (COMPRESSOR_LAST_START_TIME != 0) & (picellar_sharedData.coolingOn == True)):
-			print "Compresseur en activité depuis trop longtemps ... Arret pour recovery"
-			print "16 GF OFF"
+			print("Compresseur en activité depuis trop longtemps ... Arret pour recovery")
+			print("16 GF OFF")
 			GPIO.output(picellar_config.COOL_GPIO, 1)
 
 			COMPRESSOR_LAST_STOP_TIME = int(time.time())
 			picellar_sharedData.coolingOn = False
 			return
 		elif (picellar_sharedData.coolingOn == True):
-			print "Temp de run restant avant arret de compresseur pour recovery : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time())))
+			print("Temp de run restant avant arret de compresseur pour recovery : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_START_TIME+picellar_config.COMPRESSOR_TOOGLE_TIME) - int(time.time()))))
 	
 		
 		if ((int(time.time()) < (COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME)) & (COMPRESSOR_LAST_STOP_TIME != 0)):
-			print "Compresseur en recovery ... Démarrage impossible"
-			print "Temps de recovery restant : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time())))
-			print "16 GF OFF"
+			print("Compresseur en recovery ... Démarrage impossible")
+			print("Temps de recovery restant : " + time.strftime('%H:%M:%S', time.gmtime((COMPRESSOR_LAST_STOP_TIME+picellar_config.COMPRESSOR_RECOVERY_TIME) - int(time.time()))))
+			print("16 GF OFF")
 			GPIO.output(picellar_config.COOL_GPIO, 1)
 			picellar_sharedData.coolingOn = False
 			return
 
 			
-		print "16 GF ON"
+		print("16 GF ON")
 		GPIO.output(picellar_config.COOL_GPIO, 0)
 		
 		if picellar_sharedData.coolingOn == False:
@@ -104,7 +104,7 @@ def setCooling(toogle):
 		picellar_sharedData.coolingOn = True
 		
 	else:
-		print "16 GF OFF"
+		print("16 GF OFF")
 		GPIO.output(picellar_config.COOL_GPIO, 1)
 		
 		if picellar_sharedData.coolingOn == True:
@@ -138,10 +138,10 @@ def hvacControler(current_temp, temp_max, temp_min):
 		print('*** Error: Overlap between set minimum and maximum temperatures.')
 		return
 	
-	print('Current temperature: '+str(observedTemperature)+' C')
-	print('Minimum temperature configured : '+str(setTemperatureMin)+' C')
-	print('Maximum temperature configured : '+str(setTemperatureMax)+' C')
-	print('Treshold configured : '+str(threshold)+' C')
+	print(('Current temperature: '+str(observedTemperature)+' C'))
+	print(('Minimum temperature configured : '+str(setTemperatureMin)+' C'))
+	print(('Maximum temperature configured : '+str(setTemperatureMax)+' C'))
+	print(('Treshold configured : '+str(threshold)+' C'))
 	print('')
 	
 	# The A/C (and fan) should be enabled if the observed temperature is warmer than
@@ -263,20 +263,20 @@ def initGPIO():
 	GPIO.setup(26, GPIO.OUT)
 	
 	# On eteind tout ! #############
-	print
-	print "--> Initializing control relays (all off)"
+	print()
+	print("--> Initializing control relays (all off)")
 	setCooling(False)
 	setHeating(False)
 	setFan(False)
 	
-	print "--> Setting default control relays values"
+	print("--> Setting default control relays values")
 	setCooling(picellar_config.DEFAULT_STATE_COOLING)
 	setHeating(picellar_config.DEFAULT_STATE_HEATING)
 	setFan(picellar_config.DEFAULT_STATE_FAN)
-	print
+	print()
 	
 def signal_term_handler(signal, frame):
-	print 'got SIGTERM'
+	print('got SIGTERM')
 	sys.exit(0)
 
 def mainThread():
@@ -288,32 +288,32 @@ def mainThread():
 		# FORCE WATCHDOG JUST BEFORE CRITICAL FUNCTION #########
 		if wd_started:
 			wd_file.write('a')
-			print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+			print("\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n")
 		##########################
 		
-		print "\r\n########### STARTING SENSORS & HVAC REFRESH ###########\r\n"
-		print "Current Time : " + time.ctime()
+		print("\r\n########### STARTING SENSORS & HVAC REFRESH ###########\r\n")
+		print("Current Time : " + time.ctime())
 		
 
 		
 		tmp_sens = picellar_sensors.Read_temp_sensors()
 		for sensor  in tmp_sens:
-			print
-			print "Sensor ID : " + sensor.name
-			print "Sensor Data (temperature) : " + str(sensor.temperature)
-			print "Sensor Data (humidity) : " + str(sensor.humidity)
-			print
+			print()
+			print("Sensor ID : " + sensor.name)
+			print("Sensor Data (temperature) : " + str(sensor.temperature))
+			print("Sensor Data (humidity) : " + str(sensor.humidity))
+			print()
 			
 		temp_moy = (tmp_sens[0].temperature + tmp_sens[1].temperature) / 2
 		temp_max = max([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
 		temp_min = min([tmp_sens[0].temperature,tmp_sens[1].temperature,tmp_sens[2].temperature])
 		
-		print "Temperature Moyenne : " + str(temp_moy)
-		print "Temperature Maxi : " + str(temp_max)
-		print "Temperature Mini : " + str(temp_min)
-		print "Temperature Difference : " + str(temp_max - temp_min)
+		print("Temperature Moyenne : " + str(temp_moy))
+		print("Temperature Maxi : " + str(temp_max))
+		print("Temperature Mini : " + str(temp_min))
+		print("Temperature Difference : " + str(temp_max - temp_min))
 		
-		print
+		print()
 		
 		#print "Current State mode vu par le thread : " + str(picellar_sharedData.STATE_MODE_AUTO)
 		
@@ -345,30 +345,30 @@ def mainThread():
 		
 
 		
-		print "\r\n########### SENSORS & HVAC REFRESH ENDED ###########\r\n"
+		print("\r\n########### SENSORS & HVAC REFRESH ENDED ###########\r\n")
 		
 		# FORCE WATCHDOG JUST AFTER CRITICAL FUNCTION #########
 		if wd_started:
 			wd_file.write('a')
-			print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+			print("\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n")
 		##########################
 		
 		# WATCHDOG #################
 		if picellar_config.ENABLE_RPI_WATCHDOG:
 			if not wd_started:
 				while not wd_started:
-					print "\r\n\r\n########### WAITING FOR WD STARTUP ###########\r\n\r\n"
+					print("\r\n\r\n########### WAITING FOR WD STARTUP ###########\r\n\r\n")
 					time.sleep(1)
 				
 				wd_file.write('a')
-				print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+				print("\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n")
 					
 			st = time.time()
 			st2 = time.time()
 			while time.time() - st < picellar_config.SENSORS_REFRESH_TIME:
 				if time.time() - st2 > 5:
 					wd_file.write('a')
-					print "\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n"
+					print("\r\n\r\n########### WATCHDOG KEEPALIVE SENT ###########\r\n\r\n")
 					st2 = time.time()
 				time.sleep(1)
 				
@@ -379,53 +379,53 @@ def mainThread():
 	GPIO.cleanup()
 	
 def cleanupGPIO():
-	print "16 GF OFF"
+	print("16 GF OFF")
 	GPIO.output(picellar_config.COOL_GPIO, 1)
 	
-	print "20 CHAUF OFF"
+	print("20 CHAUF OFF")
 	GPIO.output(picellar_config.HEAT_GPIO, 1)
 	
-	print "26 Ventil OFF"
+	print("26 Ventil OFF")
 	GPIO.output(picellar_config.FAN_GPIO, 1)
 	GPIO.cleanup() # cleanup all GPIO
 
 def checkTimeAccuracy():
 	try:
-		print "\r\n########### CHECHING RPi CLOCK ACCURACY ###########\r\n"
+		print("\r\n########### CHECHING RPi CLOCK ACCURACY ###########\r\n")
 	
 		client = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 		client.settimeout(5)
 		data = '\x1b' + 47 * '\0'
-		client.sendto( data, ( picellar_config.NTP_SERVER, picellar_config.NTP_PORT ))
+		client.sendto( data.encode(), ( picellar_config.NTP_SERVER, picellar_config.NTP_PORT ))
 		data, address = client.recvfrom( 1024 )
 		if data:
-			print 'Response received from:', address
+			print('Response received from:', address)
 			systime = time.time()
 			t = struct.unpack( '!12I', data )[10]
-			t -= 2208988800L #seconds since Epoch
-			print '\tNTP Time=%s' % time.ctime(t)
-			print "NTP Time (Unix)    : " + str(t)
-			print "System Time (Unix) : " + str(systime)
-			print "Time Difference : " + str(abs(t - systime))
+			t -= 2208988800 #seconds since Epoch
+			print('\tNTP Time=%s' % time.ctime(t))
+			print("NTP Time (Unix)    : " + str(t))
+			print("System Time (Unix) : " + str(systime))
+			print("Time Difference : " + str(abs(t - systime)))
 			
 			if abs(t - systime) > 60:
-				print "Clock Not Accurate - Returning False to Main Program\r\n"
-				print "###################################################\r\n"
+				print("Clock Not Accurate - Returning False to Main Program\r\n")
+				print("###################################################\r\n")
 				return False
 			else:
-				print "Clock is (rather) Accurate - Returning True to Main Program\r\n"
-				print "###################################################\r\n"
+				print("Clock is (rather) Accurate - Returning True to Main Program\r\n")
+				print("###################################################\r\n")
 				return True
 	except:
-		print "NTP Request Error (DNS ? Network ? ...). Returning False\r\n"
-		print "###################################################\r\n"
+		print("NTP Request Error (DNS ? Network ? ...). Returning False\r\n")
+		print("###################################################\r\n")
 		return False
 
 try:
 	if __name__ == "__main__":
 
 		# SET UNBUFFERED STDOUT ####
-		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w')
 		############################
 		
 		# START WEB SERVER #########
@@ -466,7 +466,7 @@ try:
 					call(["./wdt_set_timer"])
 					wd_file = open(picellar_config.WATCHDOG_LOCATION, 'r+', 0)
 					wd_started = True
-					print "\r\n\r\n########### WATCHDOG INITIALIZED - Starting countdown ... ###########\r\n\r\n"
+					print("\r\n\r\n########### WATCHDOG INITIALIZED - Starting countdown ... ###########\r\n\r\n")
 			############################
 			# WATCHDOG HACK ? ##########
 			#	if (wd_started):
@@ -479,12 +479,13 @@ try:
 except (KeyboardInterrupt, SystemExit):
 	cleanupGPIO()
 	server.shutdown()
-	print "--- WEB Server stopped ---"
+	print("--- WEB Server stopped ---")
 	
 	# WATCHDOG STOP #################
 	if picellar_config.ENABLE_RPI_WATCHDOG & wd_started:
 		wd_file.write('V')
 		wd_file.close()
-		print "--- Watchdog Timer stopped ---"
+		print("--- Watchdog Timer stopped ---")
 	############################
 	sys.exit(0)
+

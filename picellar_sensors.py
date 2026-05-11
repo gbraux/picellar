@@ -137,11 +137,11 @@ try:
 			
 		
 		while True:
-			print "Start Sensor Read"
+			print("Start Sensor Read")
 			for sensor  in Read_temp_sensors():
-				print "Sensor ID : " + sensor.name
-				print "Sensor Data (temperature) : " + str(sensor.temperature)
-				print "Sensor Data (humidity) : " + str(sensor.humidity)
+				print ("Sensor ID : " + sensor.name)
+				print ("Sensor Data (temperature) : " + str(sensor.temperature))
+				print ("Sensor Data (humidity) : " + str(sensor.humidity))
 				print
 			
 			time.sleep(1)
